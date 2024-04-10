@@ -24,11 +24,11 @@ class SlowAPI:
     def __call__(self, environ, start_response):
         request = Request(environ)
         print(request.path_info)
-        response = Response(200, 'OK', 'Wassup my man')
+        response = Response()
 
         for path, handler_dict in self.routes.items():
             for request_method, handler in handler_dict.items():
-                if path == request.path_info and request.request_method == request_method:
+                if request.request_method == request_method and path == request.path_info:
                     handler(request, response)
                     return response.as_wsgi(start_response)
         
@@ -40,6 +40,11 @@ class SlowAPI:
         return wrapper
 
     def route_common(self, handler, method_name):
+        # {
+        #   '/nice': {
+        #       'GET': handler
+        #   }
+        # }
         path_name = f'/{handler.__name__}'
         if path_name not in self.routes:
             self.routes[path_name] = {}
@@ -47,9 +52,4 @@ class SlowAPI:
         self.routes[path_name][method_name] = handler
         
         return handler
-        # {
-        #   '/nice': {
-        #       'GET': handler
-        #   }
-        # }
         

@@ -1,5 +1,5 @@
 class Response:
-    def __init__(self, status_code=200, status='OK', text=''):
+    def __init__(self, status_code=404, status='Missing Not Found', text='Route not found!'):
         self.status_code = int(status_code)
         self.status = status
         self.text = text

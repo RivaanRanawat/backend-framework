@@ -40,6 +40,17 @@ class SlowAPI:
         def wrapper(handler):
             return self.route_common(handler, 'GET', path)
         return wrapper
+    
+    # more routes
+    def post(self, path=None):
+        def wrapper(handler):
+            return self.route_common(handler, 'POST', path)
+        return wrapper
+    
+    def delete(self, path=None):
+        def wrapper(handler):
+            return self.route_common(handler, 'DELETE', path)
+        return wrapper
 
     def route_common(self, handler, method_name, path):
         # {

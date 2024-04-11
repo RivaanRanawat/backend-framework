@@ -13,32 +13,34 @@ from parse import parse
 
 # OR
 
-# Intended route:
-# @api.get() OR @api.post() and hello will be the name of the route
-# def hello(self, request, response):
-#   pass
-
 class SlowAPI:
     def __init__(self):
         self.routes = dict()
     
     def __call__(self, environ, start_response):
         request = Request(environ)
-        print(request.path_info)
         response = Response()
 
         for path, handler_dict in self.routes.items():
             for request_method, handler in handler_dict.items():
+                # extracting query
+                req_queries = request.query_string.split('&')
+                
+                for query in req_queries:
+                    query_key, query_val = query.split('=')
+                    request.queries[query_key] = query_val
 
                 # extracting {name}=Rivaan out of '/person/Rivaan'
+                # - will give an empty object <Result () {}> if path matches
+                # but theres no params
+                # - will give a dictionary if path matches and theres params
                 res = parse(path, request.path_info)
-                print(res)
+                
                 if request.request_method == request_method and res is not None:
                     handler(request, response, **res.named)
                     return response.as_wsgi(start_response)
-                    
-                    
         
+        # return default response, error 404, route not found
         return response.as_wsgi(start_response)
 
     def get(self, path=None):

@@ -23,13 +23,6 @@ class SlowAPI:
 
         for path, handler_dict in self.routes.items():
             for request_method, handler in handler_dict.items():
-                # extracting query
-                req_queries = request.query_string.split('&')
-                
-                for query in req_queries:
-                    query_key, query_val = query.split('=')
-                    request.queries[query_key] = query_val
-
                 # extracting {name}=Rivaan out of '/person/Rivaan'
                 # - will give an empty object <Result () {}> if path matches
                 # but theres no params

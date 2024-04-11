@@ -1,5 +1,6 @@
 from request import Request
 from response import Response
+from parse import parse
 
 # Has to be a callable so can be this:
 
@@ -28,9 +29,15 @@ class SlowAPI:
 
         for path, handler_dict in self.routes.items():
             for request_method, handler in handler_dict.items():
-                if request.request_method == request_method and path == request.path_info:
-                    handler(request, response)
+
+                # extracting {name}=Rivaan out of '/person/Rivaan'
+                res = parse(path, request.path_info)
+                print(res)
+                if request.request_method == request_method and res is not None:
+                    handler(request, response, **res.named)
                     return response.as_wsgi(start_response)
+                    
+                    
         
         return response.as_wsgi(start_response)
 

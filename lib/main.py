@@ -34,18 +34,19 @@ class SlowAPI:
         
         return response.as_wsgi(start_response)
 
-    def get(self):
+    def get(self, path=None):
         def wrapper(handler):
-            return self.route_common(handler, 'GET')
+            return self.route_common(handler, 'GET', path)
         return wrapper
 
-    def route_common(self, handler, method_name):
+    def route_common(self, handler, method_name, path):
         # {
         #   '/nice': {
-        #       'GET': handler
+        #       'GET': handler,
+        #       'POST': handler2,
         #   }
         # }
-        path_name = f'/{handler.__name__}'
+        path_name = path or f'/{handler.__name__}'
         if path_name not in self.routes:
             self.routes[path_name] = {}
             

@@ -8,3 +8,9 @@ class Response:
         status = f"{self.status_code} {self.status}"
         start_response(status, headers=[])
         return [f'{self.text}'.encode()]
+
+    def send(self, text, status_code, status):
+        self.text = text
+        self.status_code = status_code
+        self.status = status
+        

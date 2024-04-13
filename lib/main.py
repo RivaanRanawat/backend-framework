@@ -2,6 +2,9 @@ from request import Request
 from response import Response
 from parse import parse
 import types
+import inspect
+
+SUPPORTED_REQ_METHODS = {'GET', 'POST', 'DELETE'}
 
 # Has to be a callable so can be this:
 
@@ -52,6 +55,7 @@ class SlowAPI:
                     handler(request, response, **res.named)
                     return response.as_wsgi(start_response)
         
+        print(self.routes)
         # return default response, error 404, route not found
         return response.as_wsgi(start_response)
 
@@ -77,7 +81,6 @@ class SlowAPI:
         #   '/nice': {
         #       'GET': handler,
         #       'POST': handler2,
-        #       'MIDDLEWARES': [fn, fn1, fn2]
         #   }
         # }
         path_name = path or f'/{handler.__name__}'
@@ -100,4 +103,29 @@ class SlowAPI:
         self.middleware_for_specific_routes[path_name][method_name] = middlewares
         
         return handler
+    
+    def route(self, path=None, middlewares=[]):
+        def wrapper(handler):
+            if isinstance(handler, type): # making sure it is only class
+                # filtering out all the inbuilt dunder methods and variables
+                class_members = inspect.getmembers(handler, 
+                                                   lambda x: inspect.isfunction(x) 
+                                                   and not (x.__name__.startswith('__') 
+                                                            and x.__name__.endswith('__')))
+                
+                for fn_name, fn_handler in class_members:
+                    fn_name = fn_name.upper()
+                    if fn_name not in SUPPORTED_REQ_METHODS:
+                        continue # can throw an error, ill just ignore that method
+                    
+                    # not returning self.route_common() cuz we are 
+                    # looping over potentically multiple methods
+                    # if we return, loop will end and other functions might
+                    # not get registered
+                    self.route_common(fn_handler, fn_name, f'/{(path or handler.__name__)}'.lower(), middlewares)
+            else:
+                raise '@route can only be used for classes'
+            
+            return handler
+        return wrapper
         

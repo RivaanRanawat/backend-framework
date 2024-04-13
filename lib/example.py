@@ -23,3 +23,16 @@ def hello(request, response, name):
 def hello3(request, response):
     # print(request.body)
     response.send('Content is different 23232', 200, 'OK')
+
+@slow_api.route('/illcallthissomething')
+class NewRoute:
+    def get(request, response):
+        response.send('this work!!!!', 203, 'SOMETHIGN')
+        print('cool shit')
+
+    def post(request, response):
+        response.send('i send something new', 200, 'OKOOKOKOKOK')
+        print('cool shi2323n232 3t')
+    
+    def pleaseignore(request, response):
+        response.send('hihihihi')

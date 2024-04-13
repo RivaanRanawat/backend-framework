@@ -1,6 +1,7 @@
 from request import Request
 from response import Response
 from parse import parse
+import types
 
 # Has to be a callable so can be this:
 
@@ -14,8 +15,9 @@ from parse import parse
 # OR
 
 class SlowAPI:
-    def __init__(self):
+    def __init__(self, middlewares=[]):
         self.routes = dict()
+        self.middlewares = middlewares
     
     def __call__(self, environ, start_response):
         request = Request(environ)
@@ -30,6 +32,13 @@ class SlowAPI:
                 res = parse(path, request.path_info)
                 
                 if request.request_method == request_method and res is not None:
+                    # run the middleware
+                    for middleware in self.middlewares:
+                        if isinstance(middleware, types.FunctionType):
+                            middleware()
+                        else:
+                            raise 'You can only pass functions as middleware!'
+
                     handler(request, response, **res.named)
                     return response.as_wsgi(start_response)
         

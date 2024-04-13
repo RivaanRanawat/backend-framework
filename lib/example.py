@@ -1,6 +1,10 @@
 from main import SlowAPI
 
-slow_api = SlowAPI()
+
+def print_something():
+    print('This is soo coooool!')
+
+slow_api = SlowAPI(middlewares=[print_something])
 
 @slow_api.get('/')
 def hello(request, response):

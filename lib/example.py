@@ -1,12 +1,13 @@
 from main import SlowAPI
 
 
-def print_something():
+def print_something(request):
+    print(request, '\nahsahsashashas')
     print('This is soo coooool!')
 
-slow_api = SlowAPI(middlewares=[print_something])
+slow_api = SlowAPI()
 
-@slow_api.get('/')
+@slow_api.get('/', middlewares=[print_something])
 def hello(request, response):
     print(request)
     response.send('Content is different', 200, 'OK')

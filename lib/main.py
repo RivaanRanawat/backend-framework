@@ -17,6 +17,7 @@ import types
 class SlowAPI:
     def __init__(self, middlewares=[]):
         self.routes = dict()
+        self.middleware_for_specific_routes = dict()
         self.middlewares = middlewares
     
     def __call__(self, environ, start_response):
@@ -32,10 +33,19 @@ class SlowAPI:
                 res = parse(path, request.path_info)
                 
                 if request.request_method == request_method and res is not None:
-                    # run the middleware
+                    # run the global middleware
                     for middleware in self.middlewares:
                         if isinstance(middleware, types.FunctionType):
-                            middleware()
+                            middleware(request)
+                        else:
+                            raise 'You can only pass functions as middleware!'
+                    
+                    # run the route specific middlewares
+                    route_mw_list = self.middleware_for_specific_routes[path][request_method]
+
+                    for mw in route_mw_list:
+                        if isinstance(mw, types.FunctionType):
+                            mw(request)
                         else:
                             raise 'You can only pass functions as middleware!'
 
@@ -45,27 +55,29 @@ class SlowAPI:
         # return default response, error 404, route not found
         return response.as_wsgi(start_response)
 
-    def get(self, path=None):
+    def get(self, path=None, middlewares=[]):
         def wrapper(handler):
-            return self.route_common(handler, 'GET', path)
+            return self.route_common(handler, 'GET', path, middlewares)
         return wrapper
     
     # more routes
-    def post(self, path=None):
+    def post(self, path=None, middlewares = []):
         def wrapper(handler):
-            return self.route_common(handler, 'POST', path)
+            return self.route_common(handler, 'POST', path, middlewares)
         return wrapper
     
-    def delete(self, path=None):
+    def delete(self, path=None, middlewares = []):
         def wrapper(handler):
-            return self.route_common(handler, 'DELETE', path)
+            return self.route_common(handler, 'DELETE', path, middlewares)
         return wrapper
 
-    def route_common(self, handler, method_name, path):
+    def route_common(self, handler, method_name, path, middlewares):
+        # routing
         # {
         #   '/nice': {
         #       'GET': handler,
         #       'POST': handler2,
+        #       'MIDDLEWARES': [fn, fn1, fn2]
         #   }
         # }
         path_name = path or f'/{handler.__name__}'
@@ -73,6 +85,19 @@ class SlowAPI:
             self.routes[path_name] = {}
             
         self.routes[path_name][method_name] = handler
+
+        # middlewares
+        # {
+        #   '/nice': {
+        #       'GET': [mw1],
+        #       'POST': [mw2,mw3,mw4],
+        #       'DELETE': []
+        #   }
+        # }
+        if path_name not in self.middleware_for_specific_routes:
+            self.middleware_for_specific_routes[path_name] = dict()
+        
+        self.middleware_for_specific_routes[path_name][method_name] = middlewares
         
         return handler
         

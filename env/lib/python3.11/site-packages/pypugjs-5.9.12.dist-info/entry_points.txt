@@ -1,0 +1,2 @@
+[console_scripts]
+pypugjs = pypugjs.convert:convert_file

@@ -27,7 +27,9 @@ def hello3(request, response):
 @slow_api.route(middlewares=[print_something])
 class NewRoute:
     def get(request, response):
-        response.render('test', {'name': 'rivaan ranawat', 'message': 'whats upppppp'})
+        response.template_extension = 'pug'
+        # response.render('test', {'name': 'rivaan ranawat', 'message': 'whats upppppp'})
+        response.render('simple', {'title': 'My Tasks'})
 
     def post(request, response):
         response.send('i send something new', 200, 'OKOOKOKOKOK')

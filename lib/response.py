@@ -1,4 +1,5 @@
 import re
+from pypugjs import simple_convert
 
 class Response:
     def __init__(self, status_code=404, status='Missing Not Found', 
@@ -23,9 +24,10 @@ class Response:
         self.status = status
     
     # template engine
-    # right now can only properly do html files
-    # as it is just taking the html file and inserting
-    # values mentioned instead of brace
+    # support for only simple HTML and PUG files
+    # for example, if you add a list and ul to pug file
+    # it work (show it)
+    # you can work on that yourself using regex.
     def render(self, template_name, context={}):
         path = f"{template_name}.{self.template_extension}"
         try:
@@ -33,10 +35,16 @@ class Response:
             template = fp.read()
         except:
             raise f"{template_name}.{self.template_extension} file not found"
-
-        # Substitute placeholders with context values
-        for key, value in context.items():
-            template = re.sub(r'{{\s*' + re.escape(key) + r'\s*}}', str(value), template)
+        
+        if self.template_extension == 'html':
+            # Substitute placeholders with context values
+            for key, value in context.items():
+                template = re.sub(r'{{\s*' + re.escape(key) + r'\s*}}', str(value), template)
+        else:
+            for key, value in context.items():
+                template = re.sub(r'\#\{' + key + r'\}', str(value), template)
+            
+            template = simple_convert(template) # returns html
         
         self.headers.append(('Content-Type', 'text/html'))
         self.text = template

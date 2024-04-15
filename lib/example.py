@@ -24,11 +24,10 @@ def hello3(request, response):
     # print(request.body)
     response.send('Content is different 23232', 200, 'OK')
 
-@slow_api.route('/illcallthissomething')
+@slow_api.route(middlewares=[print_something])
 class NewRoute:
     def get(request, response):
-        response.send('this work!!!!', 203, 'SOMETHIGN')
-        print('cool shit')
+        response.render('test', {'name': 'rivaan ranawat', 'message': 'whats upppppp'})
 
     def post(request, response):
         response.send('i send something new', 200, 'OKOOKOKOKOK')
